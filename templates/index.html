@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASL Transcriber</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .video-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #videoFeed {
+            max-width: 100%;
+            border: 3px solid #333;
+            border-radius: 10px;
+        }
+        .transcription-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            border: 2px solid #dee2e6;
+            min-height: 100px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.clear {
+            background: #dc3545;
+        }
+        button.clear:hover {
+            background: #c82333;
+        }
+        .status {
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #333;">🎥 ASL Real-Time Transcriber</h1>
+        
+        <div class="video-container">
+            <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="Live Video Feed">
+        </div>
+        
+        <div class="status" id="status">
+            Show ASL signs to the camera...
+        </div>
+        
+        <div class="transcription-box" id="transcription">
+            Transcription will appear here...
+        </div>
+        
+        <div class="controls">
+            <button onclick="updateTranscription()">Refresh Text</button>
+            <button onclick="clearTranscription()" class="clear">Clear Text</button>
+        </div>
+        
+        <div style="text-align: center; color: #666; margin-top: 20px;">
+            <p>Press 'Refresh Text' to update the transcription above</p>
+            <p>Letters will be added automatically when detected with high confidence</p>
+        </div>
+    </div>
+
+    <script>
+        function updateTranscription() {
+            fetch('/get_transcription')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('transcription').textContent = data.transcription || 'No signs detected yet...';
+                });
+        }
+        
+        function clearTranscription() {
+            fetch('/clear_transcription')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('transcription').textContent = 'Transcription cleared!';
+                    setTimeout(() => {
+                        updateTranscription();
+                    }, 2000);
+                });
+        }
+        
+        // Update transcription every 2 seconds
+        setInterval(updateTranscription, 2000);
+        
+        // Initial update
+        updateTranscription();
+    </script>
+</body>
+</html>
